@@ -10,6 +10,7 @@ ModelOpt checkpoint conventions (text only).
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import sys
 import time
@@ -81,7 +82,10 @@ def load_streamed(checkpoint):
     model.tie_weights()
     if any(p.is_meta for p in model.parameters()):
         raise RuntimeError('reference model still has unmaterialized parameters')
-    model.model.rotary_emb = type(model.model.rotary_emb)(config=cfg, device='cpu')
+    rotary = type(model.model.rotary_emb)
+    # transformers 5.19 removed the device argument of the dense and MoE rotary embeddings.
+    kwargs = {'device': 'cpu'} if 'device' in inspect.signature(rotary.__init__).parameters else {}
+    model.model.rotary_emb = rotary(config=cfg, **kwargs)
     model.eval()
     return model, ck
 

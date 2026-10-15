@@ -12,7 +12,7 @@ def test_repo_profiles_load():
     assert m5.family == "Apple10" and m5.key == "apple10" and m5.gpu_cores == 20 and m5.lane_order == "interleaved16"
     assert m5.sibling_order == "alu_first" and m5.max_cb_ms == 16
     m3 = ps["apple-m3-pro-18c"]
-    assert m3.key == "apple9" and m3.lane_order == "contiguous" and profiles_dir().is_dir()
+    assert m3.key == "apple9" and m3.lane_order == "contiguous" and profiles_dir().is_dir() and config_path("apple-m3-pro-18c").is_file()
 
 
 def test_cost_tables_measured_points_and_interpolation():

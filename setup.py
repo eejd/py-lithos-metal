@@ -1,4 +1,5 @@
 """Build a self-contained wheel, including the Metal runtime on macOS."""
+import os
 import platform
 from pathlib import Path
 import shutil
@@ -22,8 +23,12 @@ class BuildPython(build_py):
 
 class BuildMetal(build_ext):
     def build_extension(self, ext):
-        import cmake
-        cmake_bin = str(Path(cmake.CMAKE_BIN_DIR) / 'cmake')
+        # $CMAKE, then a cmake on PATH (isolated builds put the `cmake` wheel's directory there),
+        # then the wheel: a build without isolation may use a system CMake and no wheel.
+        cmake_bin = os.environ.get("CMAKE") or shutil.which("cmake")
+        if cmake_bin is None:
+            import cmake
+            cmake_bin = str(Path(cmake.CMAKE_BIN_DIR) / "cmake")
         output = Path(self.get_ext_fullpath(ext.name)).resolve().parent
         build = Path(self.build_temp).resolve() / "metal"
         subprocess.run([cmake_bin, "-S", str(ROOT), "-B", str(build),
